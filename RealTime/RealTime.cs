@@ -82,18 +82,53 @@ namespace RealTime
             var hours = currentTime.Hour;
             var minutes = currentTime.Minute;
             
-            var time = hours + minutes / 60.0m;
-            time -= (decimal)_config.TimeOffset;
+            decimal realTime = hours + minutes / 60.0m;
+
+            decimal terrariaDay = (decimal)_config.TerrariaDayStart;
+            decimal terrariaNight = (decimal)_config.TerrariaNightStart;
+            decimal dayDuration = (decimal)_config.TerrariaDayDuration;
+            decimal nightDuration = (decimal)_config.TerrariaNightDuration;
             
-            if (time < 0.00m)
-                time += 24.00m;
+            decimal realDayDuration = terrariaNight - terrariaDay;
+            decimal realNightDuration = 24.0m - (terrariaNight - terrariaDay);
             
-            bool isDaytime = time < (decimal)_config.DayNightTransition;
-            double gameTime = isDaytime 
-                ? (double)(time * 3600.0m) 
-                : (double)((time - (decimal)_config.DayNightTransition) * 3600.0m);
+            bool isDaytime;
+            double gameTime;
+            
+
+            if (realTime >= terrariaDay && realTime < terrariaNight)
+            {
+
+                isDaytime = true;
+                decimal timeIntoDayPhase = realTime - terrariaDay;
+                gameTime = (double)(timeIntoDayPhase / realDayDuration * dayDuration);
+            }
+            else
+            {
+
+                isDaytime = false;
+                decimal timeIntoNightPhase;
+                
+                if (realTime >= terrariaNight)
+                {
+                    timeIntoNightPhase = realTime - terrariaNight;
+                }
+                else
+                {
+                    timeIntoNightPhase = realNightDuration - (terrariaDay - realTime);
+                }
+                
+                gameTime = (double)(timeIntoNightPhase / realNightDuration * nightDuration);
+            }
             
             TSPlayer.Server.SetTime(isDaytime, gameTime);
+            
+            if (_config.DebugMode)
+            {
+                var gameHour = (int)(gameTime / 3600.0);
+                var gameMin = (int)((gameTime % 3600.0) / 60.0);
+                TShock.Log.ConsoleInfo($"[RealTime Debug] Real: {hours:D2}:{minutes:D2} | Game: {(isDaytime ? "Day" : "Night")} {gameHour:D2}:{gameMin:D2} ({gameTime:F0}s)");
+            }
         }
 
         private void RealTimeCommand(CommandArgs args)
@@ -143,7 +178,9 @@ namespace RealTime
 
                 _config = ConfigManager.LoadConfig();
                 args.Player.SendSuccessMessage($"[RealTime] Configuration reloaded from: {ConfigManager.GetConfigPath()}");
-                args.Player.SendInfoMessage($"TimeOffset: {_config.TimeOffset}, DayNightTransition: {_config.DayNightTransition}, UpdateInterval: {_config.UpdateIntervalMs}ms");
+                args.Player.SendInfoMessage($"Update Interval: {_config.UpdateIntervalMs}ms | Debug: {_config.DebugMode}");
+                args.Player.SendInfoMessage($"Day: {_config.TerrariaDayStart:F1}h-{_config.TerrariaNightStart:F1}h ({_config.TerrariaDayDuration}s)");
+                args.Player.SendInfoMessage($"Night: {_config.TerrariaNightStart:F1}h-{_config.TerrariaDayStart:F1}h ({_config.TerrariaNightDuration}s)");
 
                 if (wasEnabled)
                 {
