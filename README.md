@@ -31,7 +31,7 @@ RealTime is a TShock plugin that synchronizes your Terraria server's in-game tim
 | `/rt` or `/realtime` | `tshock.RealTime` | Toggle the RealTime plugin on/off |
 
 ### Usage
-The plugin starts automatically when the server loads. To disable it temporarily:
+The plugin starts automatically when the server loads (if `enabled_on_startup` is true). To disable it temporarily:
 ```
 /rt
 ```
@@ -39,12 +39,30 @@ To re-enable it:
 ```
 /rt
 ```
+To reload configuration without restarting the server:
+```
+/rt reload
+```
 
 ### Configuration
-The plugin uses the following default settings (configurable in source code):
-- **Update Interval**: 1000ms (1 second)
-- **Time Offset**: 4.5 hours
-- **Day/Night Transition**: 15:00 (3 PM)
+The plugin creates a configuration file at `tshock/RealTimeConfig.json` on first run.
+
+**Configuration options:**
+```json
+{
+  "time_offset": 4.5,
+  "day_night_transition": 15.0,
+  "update_interval_ms": 1000,
+  "enabled_on_startup": true
+}
+```
+
+- **time_offset**: Time offset in hours (default: 4.5)
+- **day_night_transition**: Hour when day becomes night in Terraria (default: 15.0 = 3 PM)
+- **update_interval_ms**: Update frequency in milliseconds (default: 1000 = 1 second)
+- **enabled_on_startup**: Whether to start automatically when server loads (default: true)
+
+After modifying the configuration file, use `/rt reload` to apply changes without restarting the server.
 
 ### How It Works
 The plugin converts your local time to Terraria's in-game time:
@@ -115,7 +133,7 @@ Le plugin convertit votre heure locale en heure de jeu Terraria :
 **QviNSteN**
 
 ### Version
-1.1
+1.2
 
 ### Licence
 Ce plugin est fourni tel quel pour les serveurs TShock.
