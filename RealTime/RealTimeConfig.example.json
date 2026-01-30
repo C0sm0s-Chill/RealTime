@@ -1,0 +1,6 @@
+{
+  "time_offset": 4.5,
+  "day_night_transition": 15.0,
+  "update_interval_ms": 1000,
+  "enabled_on_startup": true
+}
