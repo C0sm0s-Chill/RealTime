@@ -78,6 +78,11 @@ namespace RealTime
 
         private void SyncTimeWithRealWorld()
         {
+            if (TSPlayer.Server == null)
+            {
+                return;
+            }
+
             var currentTime = DateTimeOffset.Now.ToLocalTime();
             var hours = currentTime.Hour;
             var minutes = currentTime.Minute;
@@ -205,3 +210,4 @@ namespace RealTime
         }
     }
 }
+
